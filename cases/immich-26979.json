@@ -8,9 +8,15 @@
   "difficulty": "medium",
   "contract": "After opening an asset from the mobile map and returning, moving or zooming the map must continue updating the visible nearby assets without reopening the map view.",
   "ground_truth_policy": "Do not inspect the upstream fix diff before the candidate solution has been evaluated.",
-  "status": "selected",
+  "status": "runnable",
+  "runtime": {
+    "kind": "flutter",
+    "version": "3.44.8",
+    "working_directory": "mobile"
+  },
   "validation": {
-    "command": null,
-    "notes": "Validation command must be recovered from the pinned upstream repository before this case becomes runnable. Prefer the narrowest regression test plus the relevant existing mobile test suite."
+    "setup": ["flutter pub get"],
+    "commands": ["flutter test"],
+    "notes": "Start with the repository-native mobile test suite. Once a candidate fix exists, add the narrowest regression test command if a focused test can be identified without revealing the upstream fix implementation."
   }
 }
