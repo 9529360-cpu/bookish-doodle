@@ -21,6 +21,8 @@ jobs:
     steps:
       - name: Checkout harness
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Resolve case
         id: case
@@ -30,7 +32,7 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             CASE_ID="${{ inputs.case_id }}"
           else
-            REQUEST_FILE="$(git diff-tree --no-commit-id --name-only -r "${GITHUB_SHA}" | grep '^run-requests/.*\.json$' | head -n1)"
+            REQUEST_FILE="$(git diff --name-only "${GITHUB_SHA}^" "${GITHUB_SHA}" | grep '^run-requests/.*\.json$' | head -n1)"
             test -n "$REQUEST_FILE"
             CASE_ID="$(jq -r '.case_id' "$REQUEST_FILE")"
           fi
