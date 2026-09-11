@@ -1,0 +1,6 @@
+.bench/
+results/
+patches/
+__pycache__/
+*.pyc
+.DS_Store

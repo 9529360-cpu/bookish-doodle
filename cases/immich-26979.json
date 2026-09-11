@@ -1,22 +1,43 @@
 {
+  "schema_version": 1,
   "id": "immich-26979",
   "upstream_repo": "immich-app/immich",
-  "issue": 26979,
+  "source": {
+    "kind": "github_issue",
+    "number": 26979,
+    "url": "https://github.com/immich-app/immich/issues/26979"
+  },
   "base_sha": "0687c0d3f76a075cf86ae5e28f1ec3ee3b355942",
-  "ground_truth_pr": 30601,
-  "track": "mobile-runtime-state",
+  "track": "mobile-navigation-reactive-state",
   "difficulty": "medium",
   "contract": "After opening an asset from the mobile map and returning, moving or zooming the map must continue updating the visible nearby assets without reopening the map view.",
-  "ground_truth_policy": "Do not inspect the upstream fix diff before the candidate solution has been evaluated.",
-  "status": "runnable",
+  "symptoms": [
+    "Map results update normally before an asset is opened.",
+    "After returning from the asset viewer, moving or zooming the map leaves the previously visible assets stuck.",
+    "Leaving the map view and opening it again restores updates."
+  ],
+  "reproduction": [
+    "Open Places / map view in the mobile app.",
+    "Move or zoom to an area and open one of the visible assets.",
+    "Return to the map.",
+    "Move or zoom again and verify whether nearby assets refresh."
+  ],
   "runtime": {
-    "kind": "flutter",
-    "version": "3.44.8",
-    "working_directory": "mobile"
+    "working_directory": "mobile",
+    "required_bins": ["git", "flutter"],
+    "notes": "Historical mobile case. Confirm the repository-pinned Flutter/Dart toolchain before running tests."
   },
   "validation": {
-    "setup": ["flutter pub get"],
-    "commands": ["flutter test"],
-    "notes": "Start with the repository-native mobile test suite. Once a candidate fix exists, add the narrowest regression test command if a focused test can be identified without revealing the upstream fix implementation."
+    "setup": [],
+    "tiers": {
+      "smoke": [
+        {"cwd": "mobile", "argv": ["flutter", "--version"]}
+      ],
+      "focused": [],
+      "full": [
+        {"cwd": "mobile", "argv": ["flutter", "test"]}
+      ]
+    },
+    "guidance": "Prefer a narrow regression test or deterministic route/navigation-state probe before the full mobile suite."
   }
 }

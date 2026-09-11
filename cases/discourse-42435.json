@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "id": "discourse-42435",
+  "upstream_repo": "discourse/discourse",
+  "source": {
+    "kind": "public_bug_report",
+    "url": "https://meta.discourse.org/t/regression-u-username-activity-loses-scroll-position-after-browser-back/406292"
+  },
+  "base_sha": "8c876d57a20b25ec6717d5e806457551e9774ca0",
+  "track": "browser-history-infinite-scroll-state",
+  "difficulty": "hard",
+  "contract": "When a user scrolls far enough in a user activity stream to load additional pages, opens a topic, and navigates back, the activity stream must return with the loaded items and scroll position needed to place the user where they were reading.",
+  "symptoms": [
+    "The browser attempts to restore the previous scroll offset after Back navigation.",
+    "The activity list may be shorter after returning than it was before navigation.",
+    "The user lands substantially higher in the activity stream than the position they left."
+  ],
+  "reproduction": [
+    "Open a user activity stream with enough items to trigger infinite scrolling.",
+    "Scroll until an additional page of activity has loaded.",
+    "Open a topic from deep in the loaded stream.",
+    "Use browser Back and compare the restored item set and scroll position."
+  ],
+  "runtime": {
+    "working_directory": ".",
+    "required_bins": ["git", "ruby", "bundle"],
+    "notes": "Discourse system tests require the repository's normal Ruby/database/browser environment. Follow the pinned repository development instructions."
+  },
+  "validation": {
+    "setup": [],
+    "tiers": {
+      "smoke": [
+        {"cwd": ".", "argv": ["ruby", "--version"]},
+        {"cwd": ".", "argv": ["bundle", "--version"]}
+      ],
+      "focused": [],
+      "full": []
+    },
+    "guidance": "Add or identify a focused system test that loads more than one page, navigates away, goes Back, and asserts both retained items and restored scroll position before considering broader suites."
+  }
+}
