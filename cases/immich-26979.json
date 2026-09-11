@@ -1,0 +1,16 @@
+{
+  "id": "immich-26979",
+  "upstream_repo": "immich-app/immich",
+  "issue": 26979,
+  "base_sha": "0687c0d3f76a075cf86ae5e28f1ec3ee3b355942",
+  "ground_truth_pr": 30601,
+  "track": "mobile-runtime-state",
+  "difficulty": "medium",
+  "contract": "After opening an asset from the mobile map and returning, moving or zooming the map must continue updating the visible nearby assets without reopening the map view.",
+  "ground_truth_policy": "Do not inspect the upstream fix diff before the candidate solution has been evaluated.",
+  "status": "selected",
+  "validation": {
+    "command": null,
+    "notes": "Validation command must be recovered from the pinned upstream repository before this case becomes runnable. Prefer the narrowest regression test plus the relevant existing mobile test suite."
+  }
+}
