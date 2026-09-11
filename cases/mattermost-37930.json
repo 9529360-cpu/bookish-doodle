@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "id": "mattermost-37930",
+  "upstream_repo": "mattermost/mattermost",
+  "source": {
+    "kind": "historical_bug",
+    "public_report": "A hard reload can leave favorited DMs blank and group-message member counts at zero until the user clicks a channel."
+  },
+  "base_sha": "35242cbed7bf3e379801312b9077acc8edffcd78",
+  "track": "web-startup-async-state-hydration",
+  "difficulty": "hard",
+  "contract": "After a hard reload, direct-message and group-message sidebar entries must render their user identity/member count correctly regardless of whether sidebar categories or channel data arrive first, without requiring a channel click to self-heal.",
+  "symptoms": [
+    "Favorited direct-message rows can render as blank space after startup.",
+    "Group-message rows can temporarily show a member count of zero.",
+    "The problem is timing-dependent and can disappear after clicking a channel."
+  ],
+  "reproduction": [
+    "Use an account with favorited DMs and at least one group message.",
+    "Hard reload while making channel-related startup requests slower than sidebar-category loading.",
+    "Do not click a channel after startup.",
+    "Observe whether DM identity and GM member counts are populated."
+  ],
+  "runtime": {
+    "working_directory": "webapp",
+    "required_bins": ["git", "node", "npm"],
+    "notes": "The pinned webapp declares Node ^24 and npm ^11. Confirm exact repository instructions before installing dependencies."
+  },
+  "validation": {
+    "setup": [
+      {"cwd": "webapp", "argv": ["npm", "ci"]}
+    ],
+    "tiers": {
+      "smoke": [
+        {"cwd": "webapp", "argv": ["node", "--version"]},
+        {"cwd": "webapp", "argv": ["npm", "--version"]}
+      ],
+      "focused": [
+        {"cwd": "webapp", "argv": ["npm", "run", "check-types", "--workspace", "channels"]}
+      ],
+      "full": [
+        {"cwd": "webapp", "argv": ["npm", "test", "--workspace", "channels", "--", "--runInBand"]}
+      ]
+    },
+    "guidance": "The strongest regression proof forces both startup orderings instead of relying on an intermittent manual reproduction."
+  }
+}
