@@ -1,6 +1,12 @@
 name: Run benchmark case
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'cases/**'
+      - 'patches/**'
+      - '.github/workflows/run-benchmark.yml'
   workflow_dispatch:
     inputs:
       case_id:
@@ -16,18 +22,21 @@ jobs:
   benchmark:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    env:
+      CASE_ID: ${{ inputs.case_id || 'immich-26979' }}
+      CANDIDATE_REF: ${{ inputs.candidate_ref || 'main' }}
     steps:
       - name: Checkout harness
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.candidate_ref }}
+          ref: ${{ env.CANDIDATE_REF }}
 
       - name: Load case metadata
         id: case
         shell: bash
         run: |
           set -euo pipefail
-          CASE_FILE="cases/${{ inputs.case_id }}.json"
+          CASE_FILE="cases/${CASE_ID}.json"
           test -f "$CASE_FILE"
           echo "repo=$(jq -r .upstream_repo "$CASE_FILE")" >> "$GITHUB_OUTPUT"
           echo "sha=$(jq -r .base_sha "$CASE_FILE")" >> "$GITHUB_OUTPUT"
@@ -47,7 +56,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          PATCH="patches/${{ inputs.case_id }}.diff"
+          PATCH="patches/${CASE_ID}.diff"
           if [ -f "$PATCH" ] && [ -s "$PATCH" ]; then
             git -C upstream apply --check "../$PATCH"
             git -C upstream apply "../$PATCH"
@@ -68,7 +77,7 @@ jobs:
         working-directory: upstream/${{ steps.case.outputs.workdir }}
         run: |
           set -euo pipefail
-          CASE_FILE="${GITHUB_WORKSPACE}/cases/${{ inputs.case_id }}.json"
+          CASE_FILE="${GITHUB_WORKSPACE}/cases/${CASE_ID}.json"
           jq -r '.validation.setup[]?' "$CASE_FILE" | while IFS= read -r cmd; do
             echo "+ $cmd"
             bash -lc "$cmd"
@@ -79,7 +88,7 @@ jobs:
         working-directory: upstream/${{ steps.case.outputs.workdir }}
         run: |
           set -euo pipefail
-          CASE_FILE="${GITHUB_WORKSPACE}/cases/${{ inputs.case_id }}.json"
+          CASE_FILE="${GITHUB_WORKSPACE}/cases/${CASE_ID}.json"
           jq -r '.validation.commands[]?' "$CASE_FILE" | while IFS= read -r cmd; do
             echo "+ $cmd"
             bash -lc "$cmd"
