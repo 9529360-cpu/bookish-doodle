@@ -1,5 +1,4 @@
 diff --git a/mobile/lib/utils/people.utils.dart b/mobile/lib/utils/people.utils.dart
-index 1234567..89abcde 100644
 --- a/mobile/lib/utils/people.utils.dart
 +++ b/mobile/lib/utils/people.utils.dart
 @@ -4,10 +4,14 @@ import 'package:immich_mobile/generated/translations.g.dart';
@@ -19,7 +18,6 @@ index 1234567..89abcde 100644
    if (ageInMonths <= 11) {
      return t.person_age_months(months: ageInMonths);
 diff --git a/mobile/lib/presentation/widgets/asset_viewer/asset_details/people_details.widget.dart b/mobile/lib/presentation/widgets/asset_viewer/asset_details/people_details.widget.dart
-index 7654321..fedcba9 100644
 --- a/mobile/lib/presentation/widgets/asset_viewer/asset_details/people_details.widget.dart
 +++ b/mobile/lib/presentation/widgets/asset_viewer/asset_details/people_details.widget.dart
 @@ -106,6 +106,8 @@ class _Avatar extends StatelessWidget {
@@ -47,10 +45,9 @@ index 7654321..fedcba9 100644
                            color: context.textTheme.bodyMedium?.color?.withAlpha(175),
 diff --git a/mobile/test/utils/people_utils_test.dart b/mobile/test/utils/people_utils_test.dart
 new file mode 100644
-index 0000000..1111111
 --- /dev/null
 +++ b/mobile/test/utils/people_utils_test.dart
-@@ -0,0 +1,13 @@
+@@ -0,0 +1,11 @@
 +import 'package:flutter_test/flutter_test.dart';
 +import 'package:immich_mobile/utils/people.utils.dart';
 +
