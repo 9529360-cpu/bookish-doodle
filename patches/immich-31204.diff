@@ -1,0 +1,64 @@
+diff --git a/mobile/lib/utils/people.utils.dart b/mobile/lib/utils/people.utils.dart
+index 1234567..89abcde 100644
+--- a/mobile/lib/utils/people.utils.dart
++++ b/mobile/lib/utils/people.utils.dart
+@@ -4,10 +4,14 @@ import 'package:immich_mobile/generated/translations.g.dart';
+ import 'package:immich_mobile/presentation/widgets/people/person_edit_birthday_modal.widget.dart';
+ import 'package:immich_mobile/presentation/widgets/people/person_edit_name_modal.widget.dart';
+ 
+-String formatAge(DateTime birthDate, DateTime referenceDate) {
++String? formatAge(DateTime birthDate, DateTime referenceDate) {
+   final int ageInYears = _calculateAge(birthDate, referenceDate);
+   final int ageInMonths = _calculateAgeInMonths(birthDate, referenceDate);
+ 
++  if (ageInYears < 0) {
++    return null;
++  }
++
+   final t = StaticTranslations.instance;
+   if (ageInMonths <= 11) {
+     return t.person_age_months(months: ageInMonths);
+diff --git a/mobile/lib/presentation/widgets/asset_viewer/asset_details/people_details.widget.dart b/mobile/lib/presentation/widgets/asset_viewer/asset_details/people_details.widget.dart
+index 7654321..fedcba9 100644
+--- a/mobile/lib/presentation/widgets/asset_viewer/asset_details/people_details.widget.dart
++++ b/mobile/lib/presentation/widgets/asset_viewer/asset_details/people_details.widget.dart
+@@ -106,6 +106,8 @@ class _Avatar extends StatelessWidget {
+ 
+   @override
+   Widget build(BuildContext context) {
++    final birthDate = person.birthDate;
++    final formattedAge = birthDate != null ? formatAge(birthDate, assetFileCreatedAt) : null;
+     return ConstrainedBox(
+       constraints: const BoxConstraints(maxWidth: 96),
+       child: Padding(
+@@ -153,11 +155,11 @@ class _Avatar extends StatelessWidget {
+                     style: context.textTheme.labelLarge,
+                     maxLines: 1,
+                   ),
+-                  if (person.birthDate != null)
++                  if (formattedAge != null)
+                     FittedBox(
+                       fit: BoxFit.scaleDown,
+                       child: Text(
+-                        formatAge(person.birthDate!, assetFileCreatedAt),
++                        formattedAge,
+                         textAlign: TextAlign.center,
+                         style: context.textTheme.bodyMedium?.copyWith(
+                           color: context.textTheme.bodyMedium?.color?.withAlpha(175),
+diff --git a/mobile/test/utils/people_utils_test.dart b/mobile/test/utils/people_utils_test.dart
+new file mode 100644
+index 0000000..1111111
+--- /dev/null
++++ b/mobile/test/utils/people_utils_test.dart
+@@ -0,0 +1,13 @@
++import 'package:flutter_test/flutter_test.dart';
++import 'package:immich_mobile/utils/people.utils.dart';
++
++void main() {
++  test('formatAge returns null when reference date predates birth date', () {
++    final birthDate = DateTime(2015, 6, 1);
++    final referenceDate = DateTime(2010, 6, 1);
++
++    expect(formatAge(birthDate, referenceDate), isNull);
++  });
++}
