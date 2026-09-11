@@ -1,0 +1,20 @@
+{
+  "id": "immich-31204",
+  "upstream_repo": "immich-app/immich",
+  "issue": 31204,
+  "base_sha": "df7494b49e378ecbb0c8c57310610da1cb857d20",
+  "track": "mobile-domain-display",
+  "difficulty": "easy-medium",
+  "contract": "The mobile asset viewer must not display a negative age when an asset predates a person's birth date.",
+  "status": "runnable",
+  "runtime": {
+    "kind": "flutter",
+    "version": "3.47.2",
+    "working_directory": "mobile"
+  },
+  "validation": {
+    "setup": ["flutter pub get"],
+    "commands": ["flutter test test/utils/people_utils_test.dart"],
+    "notes": "Focused regression test for the negative-age boundary."
+  }
+}
