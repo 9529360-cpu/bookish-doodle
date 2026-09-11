@@ -1,0 +1,99 @@
+name: Run public benchmark
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'run-requests/**'
+  workflow_dispatch:
+    inputs:
+      case_id:
+        description: Benchmark case id
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout harness
+        uses: actions/checkout@v4
+
+      - name: Resolve case
+        id: case
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            CASE_ID="${{ inputs.case_id }}"
+          else
+            REQUEST_FILE="$(git diff-tree --no-commit-id --name-only -r "${GITHUB_SHA}" | grep '^run-requests/.*\.json$' | head -n1)"
+            test -n "$REQUEST_FILE"
+            CASE_ID="$(jq -r '.case_id' "$REQUEST_FILE")"
+          fi
+          CASE_FILE="cases/${CASE_ID}.json"
+          test -f "$CASE_FILE"
+          echo "case_id=$CASE_ID" >> "$GITHUB_OUTPUT"
+          echo "repo=$(jq -r '.upstream_repo' "$CASE_FILE")" >> "$GITHUB_OUTPUT"
+          echo "sha=$(jq -r '.base_sha' "$CASE_FILE")" >> "$GITHUB_OUTPUT"
+          echo "runtime=$(jq -r '.runtime.kind' "$CASE_FILE")" >> "$GITHUB_OUTPUT"
+          echo "runtime_version=$(jq -r '.runtime.version' "$CASE_FILE")" >> "$GITHUB_OUTPUT"
+          echo "workdir=$(jq -r '.runtime.working_directory' "$CASE_FILE")" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout pinned upstream
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.case.outputs.repo }}
+          ref: ${{ steps.case.outputs.sha }}
+          path: upstream
+          persist-credentials: false
+
+      - name: Apply candidate patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          PATCH="patches/${{ steps.case.outputs.case_id }}.diff"
+          test -s "$PATCH"
+          git -C upstream apply --check "../$PATCH"
+          git -C upstream apply "../$PATCH"
+          git -C upstream diff --check
+
+      - name: Set up Flutter
+        if: steps.case.outputs.runtime == 'flutter'
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ steps.case.outputs.runtime_version }}
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        shell: bash
+        working-directory: upstream/${{ steps.case.outputs.workdir }}
+        run: |
+          set -euo pipefail
+          CASE_FILE="${GITHUB_WORKSPACE}/cases/${{ steps.case.outputs.case_id }}.json"
+          jq -r '.validation.setup[]?' "$CASE_FILE" | while IFS= read -r cmd; do
+            echo "+ $cmd"
+            bash -lc "$cmd"
+          done
+
+      - name: Run validation
+        shell: bash
+        working-directory: upstream/${{ steps.case.outputs.workdir }}
+        run: |
+          set -euo pipefail
+          CASE_FILE="${GITHUB_WORKSPACE}/cases/${{ steps.case.outputs.case_id }}.json"
+          jq -r '.validation.commands[]?' "$CASE_FILE" | while IFS= read -r cmd; do
+            echo "+ $cmd"
+            bash -lc "$cmd"
+          done
+
+      - name: Show candidate diff
+        if: always()
+        shell: bash
+        run: |
+          git -C upstream diff --stat || true
+          git -C upstream diff --check || true
