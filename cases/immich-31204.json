@@ -13,8 +13,12 @@
     "working_directory": "mobile"
   },
   "validation": {
-    "setup": ["flutter pub get"],
+    "setup": [
+      "npm install --global @openapitools/openapi-generator-cli@2.41.0",
+      "cd ../open-api && bash ./bin/generate-dart-sdk.sh",
+      "flutter pub get"
+    ],
     "commands": ["flutter test test/utils/people_utils_test.dart"],
-    "notes": "Focused regression test for the negative-age boundary."
+    "notes": "Generate the repository-native Dart OpenAPI client before resolving the mobile package, then run the focused negative-age regression test."
   }
 }
